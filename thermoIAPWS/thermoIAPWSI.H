@@ -134,7 +134,7 @@ template<class Thermo, template<class> class Type>
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::cpv(const scalar p, const scalar T) const
 {
-    return Type<thermo<Thermo, Type> >::Cpv(*this, p, T);
+    return Type<thermo<Thermo, Type> >::Cpv(*this, p, T)*this->W();
 }
 
 

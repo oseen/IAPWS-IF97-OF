@@ -48,7 +48,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makeThermo
+makeThermos
 (
     rhoThermo,
     heRhoThermo,
