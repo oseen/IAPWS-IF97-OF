@@ -104,7 +104,7 @@ class IAPWSTransport
         static constexpr scalar TMax_ = 1073;
 
         //- min temperature at which clipping occurs [K]
-        static constexpr scalar TMin_ = 273;
+        static constexpr scalar TMin_ = 273.15;
 
         //- max pressure at which clipping occurs [K]
         const scalar pMax_;

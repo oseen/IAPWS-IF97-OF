@@ -126,7 +126,7 @@ template<class Thermo, template<class> class Type>
 inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::cv(const scalar p, const scalar T) const
 {
-    return this->cp(p, T) - this->cpMcv(p, T);
+    return this->cp(p, T) - this->cpMcv(p, T) * this->W();
 }
 
 
@@ -143,7 +143,8 @@ inline Foam::scalar
 Foam::species::thermo<Thermo, Type>::gamma(const scalar p, const scalar T) const
 {
     scalar cp = this->cp(p, T);
-    return cp/(cp - this->cpMcv(p, T));
+    scalar cv = this->cv(p, T);
+    return cp/cv;
 }
 
 
