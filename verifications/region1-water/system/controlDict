@@ -1,0 +1,239 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v1912                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+//application     buoyantBoussinesqSimpleFoam;
+//application     simpleFoam;
+//application     rhoSimpleFoam;
+application     buoyantSimpleFoam;
+libs                                                                       
+( 
+ "libfreesteam"                                                                         
+ "libIAPWSRangeThermo"
+ ); 
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         500;
+
+deltaT          1;
+
+writeControl    timeStep;
+
+writeInterval   500;
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable true;
+
+functions
+{
+    thermalPhysicalFields
+    {
+        // Load the library containing the 'coded' functionObject
+        libs            ("libutilityFunctionObjects.so");
+
+        type coded;
+
+        // Name of on-the-fly generated functionObject
+        name thermalPhysicalFields;
+
+	codeOptions
+	#{
+		-I$(FOAM_SRC)/thermophysicalModels/basic/lnInclude \
+		-I$(FOAM_SRC)/transportModels/compressible/lnInclude
+        #};
+
+        codeInclude
+        #{
+		#include "rhoThermo.H"
+	#};
+
+        codeWrite
+        #{
+            // Lookup
+            Info<< "Looking up thermalPhysical fields.\n" << endl;
+            const volScalarField& thermo_mu = mesh().lookupObject<volScalarField>("thermo:mu");
+            const volScalarField& thermo_rho = mesh().lookupObject<volScalarField>("thermo:rho");
+            const volScalarField& thermo_psi = mesh().lookupObject<volScalarField>("thermo:psi");
+            const volScalarField& thermo_alpha = mesh().lookupObject<volScalarField>("thermo:alpha");
+            const volScalarField& thermo_h = mesh().lookupObject<volScalarField>("h");
+	    const rhoThermo& thermo=mesh().lookupObject<rhoThermo>("thermophysicalProperties");
+
+	    volScalarField mu
+            (
+                IOobject
+                (
+                    "mu",
+                    mesh().time().timeName(),
+                    thermo_mu.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo_mu
+	    );
+
+	    volScalarField rho
+            (
+                IOobject
+                (
+                    "rho",
+                    mesh().time().timeName(),
+                    thermo_rho.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo_rho
+	    );
+
+	    volScalarField psi
+            (
+                IOobject
+                (
+                    "psi",
+                    mesh().time().timeName(),
+                    thermo_psi.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo_psi
+	    );
+
+	    volScalarField h
+            (
+                IOobject
+                (
+                    "h",
+                    mesh().time().timeName(),
+                    thermo_h.mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo_h
+	    );
+
+	    volScalarField Cp
+            (
+                IOobject
+                (
+                    "Cp",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo.Cp()
+	    );
+
+	    volScalarField Cv
+            (
+                IOobject
+                (
+                    "Cv",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo.Cv()
+	    );
+
+	    volScalarField CpByCpv
+            (
+                IOobject
+                (
+                    "CpByCpv",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo.CpByCpv()
+	    );
+
+	    volScalarField Cpv
+            (
+                IOobject
+                (
+                    "Cpv",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo.Cpv()
+	    );
+
+	    volScalarField alpha
+            (
+                IOobject
+                (
+                    "alpha",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo_alpha
+	    );
+
+	    volScalarField gamma
+            (
+                IOobject
+                (
+                    "gamma",
+                    mesh().time().timeName(),
+                    mesh(),
+                    IOobject::NO_READ,
+                    IOobject::AUTO_WRITE
+                ),
+		thermo.gamma()
+	    );
+
+	    if (mesh().time().outputTime())
+	    {
+		    mu.write();
+		    rho.write();
+		    psi.write();
+		    alpha.write();
+		    gamma.write();
+		    h.write();
+		    Cp.write();
+		    Cv.write();
+		    Cpv.write();
+		    CpByCpv.write();
+	    }
+        #};
+    }
+/*
+ */
+}
+
+// ************************************************************************* //
